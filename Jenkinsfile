@@ -5,28 +5,40 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git 'https://github.com/jamesarochristober/Flask-demo.git'
+                echo "Cloning repo..."
+                git branch: 'main', url: 'https://github.com/jamesarochristober/Flask-demo.git'
             }
         }
 
         stage('Setup') {
             steps {
-                sh 'python3 -m venv venv'
-                sh '. venv/bin/activate && pip install -r requirements.txt'
+                echo "Setting up Python..."
+                sh '''
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install -r requirements.txt
+                '''
             }
         }
 
         stage('Run') {
             steps {
-                sh '. venv/bin/activate && pkill -f app.py || true'
-                sh '. venv/bin/activate && nohup python app.py > app.log 2>&1 &'
+                echo "Starting Flask app..."
+                sh '''
+                . venv/bin/activate
+                pkill -f app.py || true
+                nohup python app.py > app.log 2>&1 &
+                '''
             }
         }
 
         stage('Test') {
             steps {
-                sh 'sleep 5'
-                sh 'curl http://localhost:5000'
+                echo "Testing app..."
+                sh '''
+                sleep 5
+                curl http://localhost:5000
+                '''
             }
         }
     }
