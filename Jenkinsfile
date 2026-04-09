@@ -2,24 +2,27 @@ node {
 
     stage('Checkout') {
         echo "Cloning repo..."
-        git 'https://github.com/jamesarochristober/Flask-demo.git'
+        // Explicitly set the main branch
+        git branch: 'main', url: 'https://github.com/jamesarochristober/Flask-demo.git'
     }
 
     stage('Setup') {
         echo "Setting up Python..."
         sh '''
         python3 -m venv venv
-        . venv/bin/activate
-        pip install -r requirements.txt
+        # Use venv/bin/pip explicitly to avoid sourcing issues
+        ./venv/bin/pip install --upgrade pip
+        ./venv/bin/pip install -r requirements.txt
         '''
     }
 
     stage('Run') {
         echo "Starting Flask..."
         sh '''
-        . venv/bin/activate
+        # Kill any previous app.py instances
         pkill -f app.py || true
-        nohup python app.py > app.log 2>&1 &
+        # Start Flask in background using venv Python
+        nohup ./venv/bin/python app.py > app.log 2>&1 &
         '''
     }
 
